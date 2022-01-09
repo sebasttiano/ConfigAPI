@@ -26,7 +26,7 @@ class Tasks(Base):  # pylint: disable=too-few-public-methods
     )
     status = Column(Enum("new", "success", "error"), server_default="new",
                     comment="Short description of the task status")
-    device_id = Column(Integer, ForeignKey("devices.id"), comment="Ref to the device id")
+    device_id = Column(Integer, ForeignKey("devices.id"), comment="Refer to the device id")
     command = Column(String(128), comment="Command to execute")
     created_at = Column(DateTime, comment="Task creation time", server_default=func.now())
     last_changed = Column(DateTime, comment="The time of the last change in the status of the task")
