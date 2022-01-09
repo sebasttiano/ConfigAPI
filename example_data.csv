@@ -1,0 +1,5 @@
+name,type,role,vendor,model,ip,location,description
+TOR-25,switch,access,juniper,EX3400,10.1.1.192,1-1-25,TOR for dedicated servers
+AGGREGATION-2,switch,aggregation,cisco,NEXUS6001,10.1.0.50,1-1-1,Aggregation for shared hosting
+SPINE-1,switch,spine,juniper,QFX5120-32C,10.2.0.10,2-2-1,First spine for cloud
+ASBR-4,router,asbr,juniper,MX-480,10.2.0.2,2-1-1,Border router in DC2
