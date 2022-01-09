@@ -2,7 +2,7 @@
 import logging
 import time
 import random
-from app.exceptions import DeviceConnectionError, ExecutionCommandError
+from exceptions import DeviceConnectionError, ExecutionCommandError
 
 
 LOGIN = "admin"

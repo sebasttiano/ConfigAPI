@@ -5,14 +5,12 @@ The collection of main executable functions
 from sqlalchemy.exc import OperationalError, IntegrityError
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.sql import func
-from app.models import Tasks, Devices
-from .tools.nocexec import JuniperExec, CiscoExec
-from app.exceptions import DeviceConnectionError, ExecutionCommandError
-from app.decorators import CheckExceptions
+from models import Tasks, Devices
+from tools.nocexec import JuniperExec, CiscoExec
+from decorators import CheckExceptions
+from exceptions import DeviceConnectionError, ExecutionCommandError
 import logging
-import sys
 
-sys.path.append("../app")
 logger = logging.getLogger('CApi')
 
 

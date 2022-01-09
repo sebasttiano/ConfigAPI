@@ -3,11 +3,13 @@
 import logging.config
 from flask import Flask, jsonify, make_response, request, Response
 from settings import __version__, __all_func__, config, logger_config
-from database import SessionLocal
+from database import SessionLocal, engine
 from example_db_init import init_db
 from sqlalchemy.orm import scoped_session
-from functions.main import get_devices, execute_command, check_status
+from sqlalchemy import inspect
+from main import get_devices, execute_command, check_status
 from decorators import auth
+
 
 SUCCESS_RESPONSE = {"status": "success", "msg": "OK", "api_version": __version__}
 FAILED_RESPONSE = {"status": "error", "api_version": __version__}
@@ -30,7 +32,11 @@ def create_db() -> None:
     """
      Makes db schema and populates it with initial data
     """
-    init_db()
+
+    # Check, if example tables are not exist, create them.
+    inspector = inspect(engine)
+    if not "devices" in inspector.get_table_names():
+        init_db()
 
 
 @app.before_request
