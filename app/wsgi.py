@@ -1,12 +1,12 @@
 """Web Server Gateway Interface"""
 
 import logging.config
+from sqlalchemy.orm import scoped_session
+from sqlalchemy import inspect
 from flask import Flask, jsonify, make_response, request, Response
 from settings import __version__, __all_func__, config, logger_config
 from database import SessionLocal, engine
 from example_db_init import init_db
-from sqlalchemy.orm import scoped_session
-from sqlalchemy import inspect
 from main import get_devices, execute_command, check_status
 from decorators import auth
 
@@ -40,7 +40,7 @@ def create_db() -> None:
 
 
 @app.before_request
-def check_remote_addr() -> Response:
+def check_remote_addr() -> Response | None:
     """
     Handler for check remote ip. Return 403 fobbiden, if remote ip not found in
     configuration file config.ini.
@@ -53,11 +53,12 @@ def check_remote_addr() -> Response:
         logger.error(message)
         FAILED_RESPONSE["msg"] = message
         return make_response(jsonify(FAILED_RESPONSE), 403)
+    return None
 
 
 @app.route(f'/api/{VERSION_API}/functions', methods=["GET"])
 @auth
-def get_functions() -> tuple| Response:
+def get_functions() -> tuple | Response:
     """Returns all available requests"""
 
     SUCCESS_RESPONSE['data'] = __all_func__
@@ -83,9 +84,9 @@ def execute() -> tuple | Response:
             task_id = execute_command(app.session, request.json)
             SUCCESS_RESPONSE["data"] = {"task_id": task_id}
             return make_response(jsonify(SUCCESS_RESPONSE), 201)
-        else:
-            FAILED_RESPONSE["msg"] = "Please pass the required parameters: id (device id) and command"
-            return make_response(jsonify(FAILED_RESPONSE), 400)
+        FAILED_RESPONSE["msg"] = "Please pass the required parameters:" \
+                                 " id (device id) and command"
+        return make_response(jsonify(FAILED_RESPONSE), 400)
     except AttributeError:
         FAILED_RESPONSE["msg"] = "Please pass the parameters in JSON format"
         return make_response(jsonify(FAILED_RESPONSE), 400)
@@ -107,12 +108,9 @@ def get_status() -> tuple | Response:
     if params.get("task_id"):
         SUCCESS_RESPONSE['data'] = check_status(app.session, int(params.get('task_id')))
         return make_response(jsonify(SUCCESS_RESPONSE), 200)
-    else:
-        FAILED_RESPONSE["msg"] = "Please pass the required parameters: task_id"
-        return make_response(jsonify(FAILED_RESPONSE), 400)
+    FAILED_RESPONSE["msg"] = "Please pass the required parameters: task_id"
+    return make_response(jsonify(FAILED_RESPONSE), 400)
 
 
 if __name__ == '__main__':
     app.run(debug=True, port=7500, threaded=True)
-
-

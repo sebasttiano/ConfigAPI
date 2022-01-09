@@ -13,7 +13,7 @@ EXEC_SUCCESS_CHANCE = 0.8
 logger = logging.getLogger("CApi")
 
 
-class NetExec:
+class NetExec:  # pylint: disable=too-few-public-methods
     """Class of the execution on the net devices"""
 
     def __init__(self, name: str, ip: str, login: str = LOGIN, password: str = PASS):
@@ -27,27 +27,26 @@ class NetExec:
         if random.random() < CONN_SUCCESS_CHANCE:
             logger.info(f"Connection to {self.name} established via {self.ip}")
             return True
-        else:
-            raise DeviceConnectionError
+        raise DeviceConnectionError
 
-    def send_cmd(self, command: str = 'show version'):
+    def send_cmd(self, command: str = 'show version') -> bool | None:
+        """
+         Emulates execution of command and returns True if succeeds
+         or raises Exception
+        """
         logger.info(f"Starting to execute {command} on the {self.name}")
         if self._connect():
             time.sleep(2)
             if random.random() < EXEC_SUCCESS_CHANCE:
                 logger.info(f"The execution was successful")
                 return True
-            else:
-                raise ExecutionCommandError
+            raise ExecutionCommandError
+        return None
 
 
-class JuniperExec(NetExec):
+class JuniperExec(NetExec):  # pylint: disable=too-few-public-methods
     """For juniper devices"""
-    def __init__(self, name: str, ip: str, login: str = LOGIN, password: str = PASS):
-        super().__init__(name, ip, login, password)
 
 
-class CiscoExec(NetExec):
+class CiscoExec(NetExec):  # pylint: disable=too-few-public-methods
     """For Cisco devices"""
-    def __init__(self, name: str, ip: str, login: str = LOGIN, password: str = PASS):
-        super().__init__(name, ip, login, password)

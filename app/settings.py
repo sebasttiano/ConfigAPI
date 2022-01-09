@@ -1,4 +1,5 @@
-#
+""" Various settings are stored here """
+
 from configparser import RawConfigParser
 import os
 import logging
@@ -16,15 +17,20 @@ config.read([os.path.join(PROJECT_DIR, "../config.ini")])
 
 
 class ApiLogHandler(logging.Handler):
-    '''This is a handler that writes logs to a file'''
+    """ This is a handler that writes logs to a file """
+
     def __init__(self, filename: str):
         logging.Handler.__init__(self)
         self.filename = filename
 
     def emit(self, record):
-        '''This method directly performs the action with the log. The LogRecord object is passed to it'''
+        """
+        This method directly performs the action with the log.
+        The LogRecord object is passed to it
+        """
+
         message = self.format(record)
-        with open(self.filename, 'a') as file:
+        with open(self.filename, "a", encoding="utf-8") as file:
             file.write(message + '\n')
 
 
@@ -59,5 +65,3 @@ logger_config = {
         }
     }
 }
-
-

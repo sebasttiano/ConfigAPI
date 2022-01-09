@@ -9,7 +9,8 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
-class Tasks(Base):
+class Tasks(Base):  # pylint: disable=too-few-public-methods
+    """ Class for table tasks """
 
     __tablename__ = "tasks"
     __table_args__ = {
@@ -34,7 +35,8 @@ class Tasks(Base):
     device = relationship("Devices", backref="devices", foreign_keys=[device_id])
 
 
-class Devices(Base):
+class Devices(Base):  # pylint: disable=too-few-public-methods
+    """ Class for table devices """
 
     __tablename__ = "devices"
     __table_args__ = {
@@ -52,7 +54,8 @@ class Devices(Base):
     )
     name = Column(String(128), comment="Name of the device")
     type = Column(Enum("router", "switch"), comment="Network type")
-    role = Column(Enum("asbr", "aggregation", "access", "spine", "leaf"), comment="What is device used for")
+    role = Column(Enum("asbr", "aggregation", "access", "spine", "leaf"),
+                  comment="What is device used for")
     vendor = Column(Enum("juniper", "cisco"), comment="Vendor of the device")
     model = Column(String(128), comment="Model of the device")
     ip = Column(String(128), unique=True, comment="Ip address of the device")

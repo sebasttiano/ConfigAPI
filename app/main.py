@@ -2,6 +2,7 @@
 The collection of main executable functions
 """
 
+import logging
 from sqlalchemy.exc import OperationalError, IntegrityError
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.sql import func
@@ -9,7 +10,6 @@ from models import Tasks, Devices
 from tools.nocexec import JuniperExec, CiscoExec
 from decorators import CheckExceptions
 from exceptions import DeviceConnectionError, ExecutionCommandError
-import logging
 
 logger = logging.getLogger('CApi')
 
@@ -54,8 +54,7 @@ def _get_devices(session: scoped_session, device_id: int = 0) -> list:
 
     if device_id == 0:
         return session.query(Devices).all()
-    else:
-        return session.query(Devices).filter(Devices.id == device_id).first()
+    return session.query(Devices).filter(Devices.id == device_id).first()
 
 
 def get_devices(session: scoped_session) -> list:

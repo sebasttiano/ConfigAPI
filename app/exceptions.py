@@ -2,8 +2,8 @@
 
 
 class DeviceConnectionError(Exception):
-    pass
+    """ Class Exception for failed connection """
 
 
 class ExecutionCommandError(Exception):
-    pass
+    """ Class Exception for failed command execution """

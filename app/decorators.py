@@ -36,15 +36,14 @@ def _verify_password(username: str, password: str) -> bool:
         good_pass = config.get("Users", username)
         if good_pass == pass_hash:
             return True
-        else:
-            logger.error(f"Attempting to login with an invalid {username=} or {password=}")
-            return False
-    except Exception as e:
-        logger.error(f"Bad auth\n{e}")
+        logger.error(f"Attempting to login with an invalid {username=} or {password=}")
+        return False
+    except AttributeError as err:
+        logger.error(f"Bad auth\n{err}")
         return False
 
 
-class CheckExceptions:
+class CheckExceptions:  # pylint: disable=too-few-public-methods
     """
     Try to exec the main functions,
     stop the program execution if except
@@ -55,7 +54,7 @@ class CheckExceptions:
 
     def __call__(self, func_to_decorate):
 
-        def func_wrapper(*args, **kwargs):
+        def func_wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
             """
             Try to call the function.
             Catch the exceptions. Log it.
@@ -67,8 +66,9 @@ class CheckExceptions:
 
             except self.exceptions_tuple as func_error:
                 if func_to_decorate.__name__ == "init_db":
-                    logger.error(f"Couldn't initialize test data. Perhaps they have already been initialized.\n"
-                     f"The error that occured: {func_error}")
+                    logger.error(f"Couldn't initialize test data."
+                                 f"Perhaps they have already been initialized.\n"
+                                 f"The error that occured: {func_error}")
                 else:
                     logger.error(type(func_error).__name__ + ': ' + str(func_error))
             else:
