@@ -4,3 +4,4 @@ sqlalchemy-utils
 pymysql
 gunicorn
 pylint
+git-pylint-commit-hook

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """ORM representation of the tables in DB"""
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, DateTime, Enum
