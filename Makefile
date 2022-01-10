@@ -4,11 +4,11 @@ dependency:
 ifneq (,$(wildcard /usr/bin/docker-compose))
 	@echo "Docker-compose is installed in a system"
 else
-	sudo apt update -qy && sudo apt install docker-compose
+	sudo apt update -qy && sudo apt install docker-compose -y
 endif
 
 prepare:
-	mkdir /var/log/confapi
+	sudo mkdir /var/log/confapi
 
 pre-commit:
 	pip3 install git-pylint-commit-hook
