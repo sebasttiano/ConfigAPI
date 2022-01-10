@@ -8,7 +8,7 @@ else
 endif
 
 prepare:
-	sudo mkdir /var/log/confapi
+	sudo mkdir /var/log/confapi/
 
 pre-commit:
 	pip3 install git-pylint-commit-hook
