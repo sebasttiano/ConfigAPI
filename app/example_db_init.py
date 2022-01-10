@@ -1,11 +1,9 @@
 """ This module populates table Devices with example data """
 
 import csv
-import os
 from sqlalchemy.exc import OperationalError, IntegrityError
 from models import Devices, Base
 from database import SessionLocal, engine
-from settings import PROJECT_DIR
 from decorators import CheckExceptions
 
 
@@ -15,7 +13,7 @@ def init_db(populate_from_csv: bool = True) -> None:
     session = SessionLocal()
     Base.metadata.create_all(bind=engine)
     if populate_from_csv:
-        with open(f"{os.path.split(PROJECT_DIR)[0]}/example_data.csv", "r",
+        with open(f"example_data.csv", "r",
                   encoding="utf-8") as file:
             csv_reader = csv.DictReader(file)
 

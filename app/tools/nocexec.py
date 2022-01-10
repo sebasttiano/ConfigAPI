@@ -7,8 +7,8 @@ from exceptions import DeviceConnectionError, ExecutionCommandError
 
 LOGIN = "admin"
 PASS = "password"
-CONN_SUCCESS_CHANCE = 0.8
-EXEC_SUCCESS_CHANCE = 0.8
+CONN_SUCCESS_CHANCE = 0.9
+EXEC_SUCCESS_CHANCE = 0.9
 
 logger = logging.getLogger("CApi")
 

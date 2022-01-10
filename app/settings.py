@@ -9,11 +9,12 @@ __all_func__ = ["/devices", "/status", "/execute"]
 
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
-DB_URL = 'mysql+pymysql://root:@127.0.0.1:7501/network'
+DB_URL = f'mysql+pymysql://root:@mysql:3306/network'
 
 # Loading config
 config = RawConfigParser()
-config.read([os.path.join(PROJECT_DIR, "../config.ini")])
+config.read([os.path.join(PROJECT_DIR, "../config.ini"),
+             os.path.join(PROJECT_DIR, "config.ini")])
 
 
 class ApiLogHandler(logging.Handler):
@@ -54,7 +55,7 @@ logger_config = {
             # Class init
             '()': ApiLogHandler,
             'level': 'DEBUG',
-            'filename': '/var/log/configapi/api.log',
+            'filename': '/var/log/confapi/api.log',
             'formatter': 'std_format'
         }
     },

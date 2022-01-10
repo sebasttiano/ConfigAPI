@@ -2,6 +2,7 @@
 
 import logging.config
 from sqlalchemy.orm import scoped_session
+from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import inspect
 from flask import Flask, jsonify, make_response, request, Response
 from settings import __version__, __all_func__, config, logger_config
@@ -19,9 +20,6 @@ app = Flask(__name__)
 app.session = scoped_session(SessionLocal)
 app.config["JSON_AS_ASCII"] = False
 
-# Loading approved ip
-allowed_ips = config.get("Main", "WhiteIPS").replace(" ", "").split(",")
-
 # Logging settings
 logging.config.dictConfig(logger_config)
 logger = logging.getLogger('CApi')
@@ -33,27 +31,12 @@ def create_db() -> None:
      Makes db schema and populates it with initial data
     """
 
-    # Check, if example tables are not exist, create them.
+    # Check, if example db and tables are not exists, create them.
+    if not database_exists(engine.url):
+        create_database(engine.url)
     inspector = inspect(engine)
     if not "devices" in inspector.get_table_names():
         init_db()
-
-
-@app.before_request
-def check_remote_addr() -> Response | None:
-    """
-    Handler for check remote ip. Return 403 fobbiden, if remote ip not found in
-    configuration file config.ini.
-    Returns:
-        HTTP response with json
-    """
-
-    if request.remote_addr not in allowed_ips:
-        message = f"Access with ip address {request.remote_addr} is forbidden"
-        logger.error(message)
-        FAILED_RESPONSE["msg"] = message
-        return make_response(jsonify(FAILED_RESPONSE), 403)
-    return None
 
 
 @app.route(f'/api/{VERSION_API}/functions', methods=["GET"])
