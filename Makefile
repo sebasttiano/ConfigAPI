@@ -1,4 +1,4 @@
-.PHONY: clean dependency prepare pre-commit all
+.PHONY: clean dependency pre-commit all
 
 dependency:
 ifneq (,$(wildcard /usr/bin/docker-compose))
@@ -7,18 +7,13 @@ else
 	sudo apt update -qy && sudo apt install docker-compose -y
 endif
 
-prepare:
-	sudo mkdir /var/log/confapi/
-
 pre-commit:
 	pip3 install git-pylint-commit-hook
 	# Copy script for git pre-commit
 	cp scripts/pre-commit .git/hooks/
 
-build: dependency prepare
-	docker-compose build
 
-run: build
+run:
 	docker-compose up -d
 
 clean:
