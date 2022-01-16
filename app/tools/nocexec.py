@@ -2,9 +2,9 @@
 import logging
 import time
 import random
-from exceptions import DeviceConnectionError, ExecutionCommandError
 from abc import abstractmethod
 from unittest.mock import MagicMock
+from exceptions import DeviceConnectionError, ExecutionCommandError
 from ncclient import manager
 
 
@@ -27,7 +27,7 @@ class NetExec:  # pylint: disable=too-few-public-methods
         self.con = self._connect()
 
     @abstractmethod
-    def _connect(self):
+    def _connect(self, port: int = 22):
         pass
 
     def send_cmd(self, vendor, command: str = 'show version') -> bool | None:
@@ -37,7 +37,7 @@ class NetExec:  # pylint: disable=too-few-public-methods
         if self.con:
             logger.info(f"Starting to execute {command} on the {self.name}")
             time.sleep(2)
-            if vendor == "juniper":
+            if vendor == "juniper":  # pylint: disable=R1705
                 self.con.lock(self)
                 if self.con.load_configuration(self, action="set", config=command):
                     self.con.commit(self)
@@ -49,12 +49,13 @@ class NetExec:  # pylint: disable=too-few-public-methods
                 if self.con.configure_nexus(self, command):
                     return True
                 return False
+        return None
 
 
 class JuniperExec(NetExec):  # pylint: disable=too-few-public-methods
     """For juniper devices"""
 
-    def _connect(self, port=22):
+    def _connect(self, port: int = 22):
         try:
             manager.connect = MagicMock(return_value=StubConnection)
             return manager.connect(host=self.ip,
@@ -66,7 +67,7 @@ class JuniperExec(NetExec):  # pylint: disable=too-few-public-methods
                                    hostkey_verify=False)
         except Exception as e:
             logger.error(f'SSHSession error {e}')
-            raise DeviceConnectionError
+            raise DeviceConnectionError from e
 
 
 class CiscoExec(NetExec):  # pylint: disable=too-few-public-methods
@@ -84,37 +85,35 @@ class CiscoExec(NetExec):  # pylint: disable=too-few-public-methods
                                    hostkey_verify=False)
         except Exception as e:
             logger.error(f'SSHSession error {e}')
-            raise DeviceConnectionError
+            raise DeviceConnectionError from e
 
 
 class StubConnection:
     """ Stub class """
-    def __init__(self,  ip: str, port: str, login: str = LOGIN, password: str = PASS,
-                 timeout: int = 30, device_params: dict = {}, hostkey_verify: bool = True):
+    def __init__(self,  ip: str, port: str, device_params: dict,  # pylint: disable=R0913
+                 login: str = LOGIN, password: str = PASS,
+                 timeout: int = 30, hostkey_verify: bool = True):
         self.ip = ip
         self.login = login
         self.password = password
         self.timeout = timeout
         self.device_params = device_params
         self.hostkey_verify = hostkey_verify
+        self.port = port
 
     def close_session(self):
         """ Close connection """
-        pass
 
     def lock(self) -> None:
         """ Lock the configuration"""
-        pass
 
     def commit(self) -> None:
         """ Committing the configuration"""
-        pass
 
     def unlock(self) -> None:
         """ Unlocking the configuration"""
-        pass
 
-    def load_configuration(self, action: str = "set", config: str = "show interfaces") -> bool:
+    def load_configuration(self, action: str = "set", config: str = "show interfaces") -> bool:  # pylint: disable=R0201
         """ Simulate execution """
         time.sleep(2)
         _, _ = action, config
@@ -122,7 +121,7 @@ class StubConnection:
             return True
         raise ExecutionCommandError
 
-    def configure_nexus(self, command: str):
+    def configure_nexus(self, command: str):  # pylint: disable=R0201
         """ Fictional function to configure nexus """
         time.sleep(2)
         _ = command

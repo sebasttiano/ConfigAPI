@@ -22,8 +22,8 @@ def _check_race_condition(session: scoped_session, request: dict, task_id: int) 
         logger.info("The device is busy... Waiting")
         for task in response.all():
             res = AsyncResult(str(task.task_id))
-            for i in range(5):
-                if res.ready():  # FIXME
+            for _ in range(5):
+                if res.ready():  # TODO
                     break
                 logger.info("Device re-checking in 3 seconds...")
                 time.sleep(3)
@@ -36,7 +36,7 @@ def async_execute(request: dict, task_id: int):
     Handles configuration process
     """
     session = scoped_session(SessionLocal)
-    task = session.execute(select(Tasks).filter_by(task_id=task_id)).scalar_one()
+    task = session.execute(select(Tasks).filter_by(task_id=task_id)).scalar_one()  # pylint: disable=E1101
     if _check_race_condition(session, request, task_id):
         time.sleep(3)
         execute_command(session, request, task)

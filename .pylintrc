@@ -1,4 +1,4 @@
 [pre-commit-hook]
 #command=~/ConfigAPI/venv/bin/pylint
-params=--disable=E0401,W1203,W1201,W1309,C0103
+params=--disable=E0401,W1203,W1201,W1309,W0511,C0103
 limit=10.0

@@ -1,17 +1,16 @@
 """Web Server Gateway Interface"""
 
 import logging.config
+from sqlalchemy import inspect
 from sqlalchemy.orm import scoped_session
 from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy import inspect
 from flask import Flask, jsonify, make_response, request, Response
 from settings import __version__, __all_func__
-from settings import *
+from settings import broker_url, result_backend, logger_config
 from database import SessionLocal, engine
 from example_db_init import init_db
-from main import get_devices, check_status
+from main import get_devices, check_status, _create_task
 from decorators import auth
-from main import _create_task
 
 
 SUCCESS_RESPONSE = {"status": "success", "msg": "OK", "api_version": __version__}
@@ -67,7 +66,7 @@ def load_devices() -> tuple | Response:
 @auth
 def execute() -> tuple | Response:
     """Starts async process of configuration and returns task_id immediately"""
-    from tasks import async_execute
+    from tasks import async_execute  # pylint: disable=import-outside-toplevel
 
     try:
         if request.json.get("id") and request.json.get("command"):

@@ -17,5 +17,3 @@ COPY example_data.csv /api
 
 RUN pip install -r requirements.txt
 RUN mkdir /var/log/confapi
-
-#ENTRYPOINT ["gunicorn", "wsgi:app"]
