@@ -1,7 +1,10 @@
 flask
 sqlalchemy
 sqlalchemy-utils
+celery
+redis
 pymysql
 gunicorn
 pylint
 git-pylint-commit-hook
+ncclient

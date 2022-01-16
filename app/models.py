@@ -24,7 +24,7 @@ class Tasks(Base):  # pylint: disable=too-few-public-methods
         unique=True,
         primary_key=True
     )
-    status = Column(Enum("new", "success", "error"), server_default="new",
+    status = Column(Enum("new", "in_progress", "success", "error"), server_default="new",
                     comment="Short description of the task status")
     device_id = Column(Integer, ForeignKey("devices.id"), comment="Refer to the device id")
     command = Column(String(128), comment="Command to execute")

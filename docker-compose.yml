@@ -2,14 +2,47 @@ version: "3.3"
 services:
   api:
     build: .
-    image: $API_IMAGE
+    image: ${API_IMAGE}
+    restart: unless-stopped
+    environment:
+      - MYSQL_URL=mysql+pymysql://root:@mysql:3306/network
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=rpc://
+    hostname: api
     container_name: confapi
     volumes:
       - ${LOG_DIR}:${LOG_DIR}
     ports:
       - ${API_PORT}:80
+    command: gunicorn wsgi:app
+
   database:
-    image: "mysql:latest"
+    image: mysql:latest
+    restart: unless-stopped
+    hostname: mysql
     container_name: mysql
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      - TZ=Europe/Moscow
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+
+  rabbitmq:
+    image: rabbitmq
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
+    container_name: rabbitmq
+    hostname: rabbitmq
+
+  worker:
+    image: ${API_IMAGE}
+    hostname: celery
+    container_name: celery_worker
+    restart: unless-stopped
+    volumes:
+      - ${LOG_DIR}:${LOG_DIR}
+    environment:
+      - MYSQL_URL=mysql+pymysql://root:@mysql:3306/network
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+      - CELERY_RESULT_BACKEND=rpc://
+      - TZ=Europe/Moscow
+    command: celery -A tasks worker -l INFO

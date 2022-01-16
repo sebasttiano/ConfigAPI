@@ -5,11 +5,13 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import inspect
 from flask import Flask, jsonify, make_response, request, Response
-from settings import __version__, __all_func__, config, logger_config
+from settings import __version__, __all_func__
+from settings import *
 from database import SessionLocal, engine
 from example_db_init import init_db
-from main import get_devices, execute_command, check_status
+from main import get_devices, check_status
 from decorators import auth
+from main import _create_task
 
 
 SUCCESS_RESPONSE = {"status": "success", "msg": "OK", "api_version": __version__}
@@ -18,7 +20,11 @@ VERSION_API = "v1.0"
 
 app = Flask(__name__)
 app.session = scoped_session(SessionLocal)
-app.config["JSON_AS_ASCII"] = False
+app.config.update(
+    JSON_AS_ASCII=False,
+    CELERY_BROKER_URL=broker_url,
+    result_backend=result_backend
+)
 
 # Logging settings
 logging.config.dictConfig(logger_config)
@@ -60,17 +66,22 @@ def load_devices() -> tuple | Response:
 @app.route(f'/api/{VERSION_API}/execute', methods=["POST"])
 @auth
 def execute() -> tuple | Response:
-    """Starts process of configuration and returns task_id"""
+    """Starts async process of configuration and returns task_id immediately"""
+    from tasks import async_execute
 
     try:
         if request.json.get("id") and request.json.get("command"):
-            task_id = execute_command(app.session, request.json)
+            task_data = _create_task(app.session, request.json["id"], request.json["command"])
+            task_id = task_data.task_id
+            async_execute.apply_async(args=[request.json, task_id],
+                                      task_id=str(task_id))
             SUCCESS_RESPONSE["data"] = {"task_id": task_id}
             return make_response(jsonify(SUCCESS_RESPONSE), 201)
         FAILED_RESPONSE["msg"] = "Please pass the required parameters:" \
                                  " id (device id) and command"
         return make_response(jsonify(FAILED_RESPONSE), 400)
-    except AttributeError:
+    except AttributeError as error:
+        print(error)
         FAILED_RESPONSE["msg"] = "Please pass the parameters in JSON format"
         return make_response(jsonify(FAILED_RESPONSE), 400)
 

@@ -22,22 +22,23 @@ def _execute_on_device(device_info: list, command: str) -> bool:
         device_call = JuniperExec(device_info.name, device_info.ip)
     elif device_info.vendor == "cisco":
         device_call = CiscoExec(device_info.name, device_info.ip)
-    return device_call.send_cmd(command)
+    return device_call.send_cmd(device_info.vendor, command)
 
 
 @CheckExceptions((OperationalError, IntegrityError))
-def _create_task(session: scoped_session, device_info: list,
+def _create_task(session: scoped_session, device_id: int,
                  command: str, status: str = "new") -> Tasks:
     """Creates a task with status and returns its id"""
 
-    data = Tasks(status=status, device_id=device_info.id, command=command)
+    data = Tasks(status=status, device_id=device_id, command=command)
     session.add(data)
     session.commit()
     return data
 
 
 @CheckExceptions((OperationalError, IntegrityError))
-def _update_task(session: scoped_session, task: Tasks, new_status: str, msg='') -> None:
+def _update_task(session: scoped_session, task: Tasks,
+                 new_status: str, msg='', close_session: bool = True) -> None:
     """ After configuration updates the status of the tasks"""
 
     if msg:
@@ -45,7 +46,8 @@ def _update_task(session: scoped_session, task: Tasks, new_status: str, msg='') 
     task.last_changed = func.now()
     task.status = new_status
     session.commit()
-    session.close()
+    if close_session:
+        session.close()
 
 
 @CheckExceptions((OperationalError, IntegrityError))
@@ -79,19 +81,18 @@ def check_status(session: scoped_session, task_id: int):
     return res.__dict__
 
 
-def execute_command(session: scoped_session, request: dict) -> int:
+def execute_command(session: scoped_session, request: dict, task: Tasks) -> None:
     """
     Handles configuration process.
     Returns created task id
     """
 
     device_info = _get_devices(session, (request["id"]))
-    task_data = _create_task(session, device_info, request["command"])
-    task_id = task_data.task_id
+    _update_task(session, task, new_status="in_progress", close_session=False)
     try:
         if _execute_on_device(device_info, request["command"]):
-            _update_task(session, task_data, "success")
+            _update_task(session, task, "success")
+            logger.info(f"The execution was successful")
     except (DeviceConnectionError, ExecutionCommandError) as err:
         logger.error(f"Configuration FAILED!!!\n{err.__class__.__name__}")
-        _update_task(session, task_data, "error", msg=err.__class__.__name__)
-    return task_id
+        _update_task(session, task, "error", msg=err.__class__.__name__)

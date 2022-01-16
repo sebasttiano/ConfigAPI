@@ -4,17 +4,20 @@ from configparser import RawConfigParser
 import os
 import logging
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __all_func__ = ["/devices", "/status", "/execute"]
 
 
-PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
-DB_URL = f'mysql+pymysql://root:@mysql:3306/network'
+project_dir = os.path.dirname(os.path.realpath(__file__))
+db_url = os.environ.get("MYSQL_URL", "mysql+pymysql://root:@localhost:3306/network")
+broker_url = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672/")
+result_backend = os.environ.get("CELERY_RESULT_BACKEND", "rpc://")
+
 
 # Loading config
 config = RawConfigParser()
-config.read([os.path.join(PROJECT_DIR, "../config.ini"),
-             os.path.join(PROJECT_DIR, "config.ini")])
+config.read([os.path.join(project_dir, "../config.ini"),
+             os.path.join(project_dir, "config.ini")])
 
 
 class ApiLogHandler(logging.Handler):
